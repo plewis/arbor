@@ -14,6 +14,8 @@ double      Arbor::_def_grapefraction   = 0.1;
 
 int main(int argc, const char * argv[])
     {
+    //std::cerr << "Current working directory: " << getcwd(NULL, 0) << std::endl;
+
     Arbor arbor;
     try {
         arbor.processCommandLineOptions(argc, argv);

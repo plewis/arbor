@@ -15,12 +15,12 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		D133B8E01F8417A500490C10 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -69,14 +69,14 @@
 		D133B8E41F8417A500490C10 /* arbor */ = {
 			isa = PBXGroup;
 			children = (
-				D133B8E51F8417A500490C10 /* main.cpp */,
-				D119021E1F84191400F5DC64 /* arbor.cpp */,
 				D119021A1F84190000F5DC64 /* arbor.hpp */,
+				D119021E1F84191400F5DC64 /* arbor.cpp */,
 				D11902131F8418B400F5DC64 /* grape.hpp */,
 				D11902141F8418B400F5DC64 /* grapedb.hpp */,
 				D11902151F8418B400F5DC64 /* lot.hpp */,
 				D11902171F8418B400F5DC64 /* utilfunc.hpp */,
 				D11902181F8418B400F5DC64 /* xarbor.hpp */,
+				D133B8E51F8417A500490C10 /* main.cpp */,
 			);
 			path = arbor;
 			sourceTree = "<group>";
