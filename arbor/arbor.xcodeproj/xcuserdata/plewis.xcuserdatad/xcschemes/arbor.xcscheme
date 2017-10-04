@@ -47,7 +47,7 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "/Users/plewis/Desktop/arbor/arbor"
+      customWorkingDirectory = "/Users/plewis/Desktop/grape-arbor/arbor"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -76,7 +76,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "0.05"
+            argument = "0.1"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -84,7 +84,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "500"
+            argument = "400"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -92,7 +92,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "13579"
+            argument = "13597"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

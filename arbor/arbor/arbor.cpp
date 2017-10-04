@@ -15,12 +15,12 @@ void Arbor::processCommandLineOptions(int argc, const char * argv[])
     boost::program_options::variables_map       vm;
     boost::program_options::options_description desc("Allowed options");
     desc.add_options()
-        ("help,h",                                                                                                                  "produce help message")
-        ("version,v",                                                                                                               "show program version")
-        ("datafile,d",  boost::program_options::value<std::string>(&_data_file_name),                                           "name of data file in NEXUS format")
-        ("grapefraction,f", boost::program_options::value< double >(&_grape_fraction)->default_value(_def_grapefraction),           "fraction of sample to use in forming grapes")
-        ("minsamplesize,m", boost::program_options::value< unsigned >(&_min_sample_size)->default_value(_def_minsamplesize),             "minimum number of sampled points for tree topology to be considered")
-        ("seed,s",          boost::program_options::value< unsigned >(&_rnseed)->default_value(_def_rnseed),             "seed for pseudorandom number generation")
+        ("help,h",                                                                                                           "produce help message")
+        ("version,v",                                                                                                        "show program version")
+        ("datafile,d",      boost::program_options::value<std::string>(&_data_file_name),                                    "name of parameter sample file")
+        ("grapefraction,f", boost::program_options::value< double >(&_grape_fraction)->default_value(_def_grapefraction),    "fraction of sample to use in forming grapes")
+        ("minsamplesize,m", boost::program_options::value< unsigned >(&_min_sample_size)->default_value(_def_minsamplesize), "minimum number of sampled points for tree topology to be considered")
+        ("seed,s",          boost::program_options::value< unsigned >(&_rnseed)->default_value(_def_rnseed),                 "seed for pseudorandom number generation")
         ;
     boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
     boost::program_options::notify(vm);
@@ -584,8 +584,8 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
         _reference_indices.push_back(x.first);
         }
 
-    // Initialize min_max_radius, starting min off at the largest possible radius and starting max at the smallest possible radius
-    std::pair<double,double> min_max_radius = std::pair<double,double>(std::numeric_limits<double>().max(),0.0);
+    // Initialize _min_radius to the largest possible radius
+    _min_radius = std::numeric_limits<double>().max();
 
     // Each grape is centered at one reference point, and the radius of the grape is set just large enough
     // to enclose the num_to_keep closest reference points
@@ -600,14 +600,12 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
         std::vector<double> & param_vect = parameters[k];
         _grapes.push_back(Grape(k, r, param_vect, neighbors));
 
-        if (r < min_max_radius.first)
-            min_max_radius.first = r;
-        if (r > min_max_radius.second)
-            min_max_radius.second = r;
+        if (r < _min_radius)
+            _min_radius = r;
         }
 
     // Debug sanity check: make sure all grapes contain at least 2 reference sample points (their center plus 1 other)
-    for (auto & g : _grapes)    //temporary!
+    for (auto & g : _grapes)
         {
         unsigned ninside = 0;
         for (unsigned i = 0; i < _reference_indices.size(); ++i)
@@ -621,11 +619,10 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
             throw XArbor(boost::str(boost::format("at least one grape does not enclose 1 point besides itself (ninside = %d)") % ninside));
         }
 
-    // Trying Yu-Bo's method: all grapes have same radius equal to the smallest radius
-    // calculated for any grape
+    // All grapes have same radius equal to the smallest radius calculated for any grape
     for (auto & g : _grapes)
         {
-        g._radius = min_max_radius.first; //temporary!
+        g._radius = _min_radius;
         }
     }
 
@@ -720,7 +717,7 @@ void Arbor::calcIndivTopolMargLikes()
     _N = 0;
     std::vector<double> total_placed;
     _total_sample_size = 0;
-    _min_radius = std::numeric_limits<double>().max();
+    //_min_radius = std::numeric_limits<double>().max();
 
     _log_ratio_terms.clear();
     _delta_terms.clear();
