@@ -37,6 +37,7 @@ class Arbor
         void                readData();
         void                showParamTable() const;
         void                calcIndivTopolMargLikes();
+        void                showTopoFreq();
         void                showTopoTable();
         double              summationWithFloatingControl(const std::vector<double> & v) const;
         void                margLikeOneTopology(sample_vect_t & parameters, dlb_vect_t & log_likelihoods, dlb_vect_t & log_priors);

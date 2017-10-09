@@ -1,4 +1,11 @@
-#include <regex>
+#if 1
+#   include <boost/regex.hpp>
+#   define REGEX_NAMESPACE boost
+#else
+#   include <regex>
+#   define REGEX_NAMESPACE std
+#endif
+
 #include <fstream>
 #include <numeric>
 #include <boost/algorithm/string.hpp>
@@ -92,11 +99,11 @@ void Arbor::calcParamTypesFromColumnHeaders()
     // Fill in _param_types and _param_subsets vectors using strings in _column_headers vector
 
     std::string subsetstr;
-    std::smatch what;
-    std::regex rex_shape("log\\((\\d+)_gamma_shape\\)");
-    std::regex rex_pinvar("logit\\((\\d+)_pinvar\\)");
-    std::regex rex_exchangeability("log\\((\\d+)_r([ACGT][ACGT])/(\\d+)_rAC\\)");
-    std::regex rex_frequency("log\\((\\d+)_freq([ACGT])/(\\d+)_freqA\\)");
+    REGEX_NAMESPACE::smatch what;
+    REGEX_NAMESPACE::regex rex_shape("log\\((\\d+)_gamma_shape\\)");
+    REGEX_NAMESPACE::regex rex_pinvar("logit\\((\\d+)_pinvar\\)");
+    REGEX_NAMESPACE::regex rex_exchangeability("log\\((\\d+)_r([ACGT][ACGT])/(\\d+)_rAC\\)");
+    REGEX_NAMESPACE::regex rex_frequency("log\\((\\d+)_freq([ACGT])/(\\d+)_freqA\\)");
 
     _nsubsets = 0;
     _param_types.clear();
@@ -104,7 +111,7 @@ void Arbor::calcParamTypesFromColumnHeaders()
     for (unsigned i = 4; i < _column_headers.size(); ++i)
         {
         std::string & h = _column_headers[i];
-        if (std::regex_match(h, what, rex_shape))
+        if (REGEX_NAMESPACE::regex_match(h, what, rex_shape))
             {
             _param_types.push_back(ptype_gamma_shape);
             subsetstr = std::string(what[1].first, what[1].second);
@@ -113,7 +120,7 @@ void Arbor::calcParamTypesFromColumnHeaders()
             if (subset > _nsubsets)
                 _nsubsets = subset;
             }
-        else if (std::regex_match(h, what, rex_pinvar))
+        else if (REGEX_NAMESPACE::regex_match(h, what, rex_pinvar))
             {
             _param_types.push_back(ptype_pinvar);
             subsetstr = std::string(what[1].first, what[1].second);
@@ -122,7 +129,7 @@ void Arbor::calcParamTypesFromColumnHeaders()
             if (subset > _nsubsets)
                 _nsubsets = subset;
             }
-        else if (std::regex_match(h, what, rex_exchangeability))
+        else if (REGEX_NAMESPACE::regex_match(h, what, rex_exchangeability))
             {
             _param_types.push_back(ptype_exchangeability);
             subsetstr = std::string(what[1].first, what[1].second);
@@ -131,7 +138,7 @@ void Arbor::calcParamTypesFromColumnHeaders()
             if (subset > _nsubsets)
                 _nsubsets = subset;
             }
-        else if (std::regex_match(h, what, rex_frequency))
+        else if (REGEX_NAMESPACE::regex_match(h, what, rex_frequency))
             {
             _param_types.push_back(ptype_frequency);
             subsetstr = std::string(what[1].first, what[1].second);
@@ -174,9 +181,9 @@ void Arbor::readData()
     const char * rex = "[\\r\\n]+";
 
     // Set up regular expression reader to iterate through rows
-    std::regex row_expr(rex);
-    std::sregex_token_iterator m(contents.begin(), contents.end(), row_expr, -1);
-    std::sregex_token_iterator m2;
+    REGEX_NAMESPACE::regex row_expr(rex);
+    REGEX_NAMESPACE::sregex_token_iterator m(contents.begin(), contents.end(), row_expr, -1);
+    REGEX_NAMESPACE::sregex_token_iterator m2;
 
     for (unsigned row = 0; m != m2; ++m, ++row)
         {
@@ -245,14 +252,6 @@ void Arbor::readData()
 
     // _nparams should equal the length of the first parameter vector for the most frequently sampled tree topology
     assert(_nparams == _parameters[_tree_topologies[0].second][0].size());
-
-    //unsigned i = 1;
-    //std::cout << "\nTopologies found:\n" << std::endl;
-    //for (auto p : _tree_topologies)
-    //    {
-    //    std::cout << boost::str(boost::format("%12d %12d %12d") % i % p.first % p.second) << std::endl;
-    //    ++i;
-    //    }
     }
 
 void Arbor::initRandom()
@@ -742,6 +741,18 @@ void Arbor::calcIndivTopolMargLikes()
         }
     }
 
+void Arbor::showTopoFreq()
+    {
+    unsigned i = 1;
+    std::cout << "\n  Found " << _tree_topologies.size() << " tree topologies:" << std::endl;
+    std::cout << boost::str(boost::format("  %10s %10s %10s\n") % "number" % "topology" % "frequency");
+    for (auto p : _tree_topologies)
+        {
+        std::cout << boost::str(boost::format("  %10d %10d %10d\n") % (i+1) % p.second % p.first);
+        ++i;
+        }
+    }
+
 void Arbor::showTopoTable()
     {
     std::cout << "\n  Found " << _tree_topologies.size() << " tree topologies:" << std::endl;
@@ -789,6 +800,7 @@ void Arbor::run()
     showUserSpecifiedOptions();
     readData();
     showParamTable();
+    showTopoFreq();
     calcIndivTopolMargLikes();
     showTopoTable();
     calcOverallMargLike();

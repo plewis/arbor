@@ -10,6 +10,7 @@
 		D119021F1F84191400F5DC64 /* arbor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D119021E1F84191400F5DC64 /* arbor.cpp */; };
 		D11902211F841D8300F5DC64 /* libboost_program_options.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D11902201F841D8300F5DC64 /* libboost_program_options.dylib */; };
 		D133B8E61F8417A500490C10 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D133B8E51F8417A500490C10 /* main.cpp */; };
+		D14C1F571F8B99470094FED5 /* libboost_regex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D14C1F561F8B99470094FED5 /* libboost_regex.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +36,7 @@
 		D11902201F841D8300F5DC64 /* libboost_program_options.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_program_options.dylib; path = ../../../Documents/libraries/boost_1_65_0/stage/lib/libboost_program_options.dylib; sourceTree = "<group>"; };
 		D133B8E21F8417A500490C10 /* arbor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = arbor; sourceTree = BUILT_PRODUCTS_DIR; };
 		D133B8E51F8417A500490C10 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		D14C1F561F8B99470094FED5 /* libboost_regex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_regex.dylib; path = ../../../Documents/libraries/boost_1_65_0/stage/lib/libboost_regex.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D14C1F571F8B99470094FED5 /* libboost_regex.dylib in Frameworks */,
 				D11902211F841D8300F5DC64 /* libboost_program_options.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -52,6 +55,7 @@
 		D133B8D91F8417A500490C10 = {
 			isa = PBXGroup;
 			children = (
+				D14C1F561F8B99470094FED5 /* libboost_regex.dylib */,
 				D11902201F841D8300F5DC64 /* libboost_program_options.dylib */,
 				D133B8E41F8417A500490C10 /* arbor */,
 				D133B8E31F8417A500490C10 /* Products */,
