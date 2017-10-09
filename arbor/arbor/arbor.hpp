@@ -114,9 +114,9 @@ class Arbor
     };
 
 inline Arbor::Arbor()
-  : _grape_fraction(_def_grapefraction)
-  , _min_sample_size(_def_minsamplesize)
+  : _min_sample_size(_def_minsamplesize)
   , _rnseed(_def_rnseed)
+  , _grape_fraction(_def_grapefraction)
   , _skip(1)
   , _correlation(true)
     {
@@ -126,5 +126,5 @@ inline Arbor::Arbor()
 inline Arbor::~Arbor()
     {
     }
-    
+
 }
