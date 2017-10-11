@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This file is still a work in progress, and is very UConn specific at the moment!
+
 # The Boost C++ Libraries were successfully built!
 #
 # The following directory should be added to compiler include paths:
