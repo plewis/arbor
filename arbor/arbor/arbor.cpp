@@ -637,14 +637,13 @@ void Arbor::calcDeltaTerms(sample_vect_t & parameters, dlb_vect_t & log_likeliho
         g._log_hypercylinder_volume = g._log_hyperball_volume + g._log_kernel;
         _delta_terms.push_back(g._log_hypercylinder_volume);
         }
-    std::sort(_grapes.begin(), _grapes.end(), std::greater<Grape>());
+    //std::sort(_grapes.begin(), _grapes.end(), std::greater<Grape>());
     }
 
 void Arbor::calcRatioTerms(sample_vect_t & parameters, dlb_vect_t & log_likelihoods, dlb_vect_t & log_priors, dlb_vect_t & log_jacobians)
     {
     // Appends terms for current topology to to _log_ratio_terms vector.
     // The tmp_count_num_grapes vector counts the number of grapes to which each estimation sample belongs
-    // Only useful if _grape_overlap is true; otherwise, every element will be 1
     std::vector<unsigned> tmp_count_num_grapes(_estimation_indices.size(), 0);
 
     _placed.clear();
@@ -654,9 +653,6 @@ void Arbor::calcRatioTerms(sample_vect_t & parameters, dlb_vect_t & log_likeliho
     unsigned k = 0;
     for (auto i : _estimation_indices)
         {
-        // Note: grapes are sorted so that those with greatest hypercylinder volume are first, which should result in
-        // greater efficiency (unless _grape_overlap is true) because those with larger volumes should capture the
-        // most estimation sample points
         for (unsigned j = 0; j < _grapes.size(); ++j)
             {
             Grape & g = _grapes[j];
@@ -664,8 +660,6 @@ void Arbor::calcRatioTerms(sample_vect_t & parameters, dlb_vect_t & log_likeliho
             if (d < 0.0)
                 {
                 double log_kernel = log_likelihoods[i] + log_priors[i] + log_jacobians[i];
-
-                //std::cerr << "adding " << log_kernel << " to grape " << j << std::endl; //temporary!
 
                 g._placed_log_kernels.push_back(log_kernel);            // record log_kernel of point placed in grape g so that variance can later be calculated
                 _placed.push_back(fabs(g._log_kernel - log_kernel));

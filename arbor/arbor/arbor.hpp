@@ -95,7 +95,7 @@ class Arbor
         double                                  _logdetS;                   // log |determinant of _S|
 
         // data members that are emptied and reused for each topology
-        unsigned                                _in_multiple_grapes;        // number of estimation sample points placed in more than one grape (zero unless _grape_overlap is true)
+        unsigned                                _in_multiple_grapes;        // number of estimation sample points placed in more than one grape
         std::vector<double>                     _placed;                    // vector of absolute differences between log-kernel of placed sample point and the log-kernel of the center of the grape in which it was placed
         std::vector<Grape>                      _grapes;                    // vector of Grape objects
         std::vector<double>                     _log_jacobians;             // log of the jacobian for log-transformation plus standardization
