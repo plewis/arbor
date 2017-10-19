@@ -34,6 +34,7 @@
 		D119021A1F84190000F5DC64 /* arbor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = arbor.hpp; sourceTree = "<group>"; };
 		D119021E1F84191400F5DC64 /* arbor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = arbor.cpp; sourceTree = "<group>"; };
 		D11902201F841D8300F5DC64 /* libboost_program_options.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_program_options.dylib; path = ../../../Documents/libraries/boost_1_65_0/stage/lib/libboost_program_options.dylib; sourceTree = "<group>"; };
+		D11FEFE21F97E691003DAFDE /* pairdist.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = pairdist.hpp; sourceTree = "<group>"; };
 		D133B8E21F8417A500490C10 /* arbor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = arbor; sourceTree = BUILT_PRODUCTS_DIR; };
 		D133B8E51F8417A500490C10 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		D14C1F561F8B99470094FED5 /* libboost_regex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_regex.dylib; path = ../../../Documents/libraries/boost_1_65_0/stage/lib/libboost_regex.dylib; sourceTree = "<group>"; };
@@ -75,6 +76,7 @@
 			children = (
 				D119021A1F84190000F5DC64 /* arbor.hpp */,
 				D119021E1F84191400F5DC64 /* arbor.cpp */,
+				D11FEFE21F97E691003DAFDE /* pairdist.hpp */,
 				D11902131F8418B400F5DC64 /* grape.hpp */,
 				D11902141F8418B400F5DC64 /* grapedb.hpp */,
 				D11902151F8418B400F5DC64 /* lot.hpp */,

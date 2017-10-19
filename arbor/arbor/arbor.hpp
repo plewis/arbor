@@ -41,7 +41,7 @@ class Arbor
         void                showTopoTable();
         double              summationWithFloatingControl(const std::vector<double> & v) const;
         void                margLikeOneTopology(sample_vect_t & parameters, dlb_vect_t & log_likelihoods, dlb_vect_t & log_priors);
-        void                chooseGrapeSeeds(sample_vect_t & parameters);
+        void                chooseReferenceSample(sample_vect_t & parameters);
         void                calcMeansAndStdevs(sample_vect_t & parameters);
         void                standardizeSampleAllowingCorrelation(sample_vect_t & parameters);
         void                standardizeSampleAssumingIndependence(sample_vect_t & parameters);
@@ -57,7 +57,8 @@ class Arbor
         std::string                             _data_file_name;            // the name of the sample file to be processed
         unsigned                                _min_sample_size;           // minimum number of samples for tree topology inclusion
         unsigned                                _rnseed;                    // pseudorandom number seed
-        double                                  _grape_fraction;            // fraction of sample used to define grapes
+        double                                  _grape_fraction;            // fraction of total sample used as the reference sample
+        double                                  _keep_fraction;             // fraction of the reference sample used to define grapes
 
         // data members that could become user-configurable options in the future
         unsigned                                _skip;                      // number of samples to skip (as burn-in)
@@ -94,7 +95,8 @@ class Arbor
         Eigen::MatrixXd                         _Sinv;                      // p x p covariance matrix raised to power -0.5
         double                                  _logdetS;                   // log |determinant of _S|
 
-        // data members that are emptied and reused for each topology
+        // data members that are reused for each topology
+        unsigned                                _ngrapes;                   // equals _keep_fraction*_reference_indices.size()
         unsigned                                _in_multiple_grapes;        // number of estimation sample points placed in more than one grape
         std::vector<double>                     _placed;                    // vector of absolute differences between log-kernel of placed sample point and the log-kernel of the center of the grape in which it was placed
         std::vector<Grape>                      _grapes;                    // vector of Grape objects
@@ -110,6 +112,7 @@ class Arbor
         static unsigned                         _def_rnseed;                // default value for _rnseed
         static unsigned                         _def_minsamplesize;         // default value for _min_sample_size
         static double                           _def_grapefraction;         // default value for _grape_fraction
+        static double                           _def_keepfraction;          // default value for _keep_fraction
 
     };
 

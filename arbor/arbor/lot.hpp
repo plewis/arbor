@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctime>
+#include <memory>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -20,7 +21,7 @@ class Lot
         double                  normal();
         double                  logUniform();
         
-        typedef boost::shared_ptr<Lot> SharedPtr;
+        typedef std::shared_ptr<Lot> SharedPtr;
 
     private:
     

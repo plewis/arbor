@@ -12,6 +12,7 @@ struct GrapeData
         
         unsigned    _id;
         unsigned    _frequency;
+        unsigned    _num_grapes;
         unsigned    _reference_samplesize;
         unsigned    _estimation_samplesize;
         unsigned    _num_placed;
@@ -25,6 +26,7 @@ struct GrapeData
 
 inline GrapeData::GrapeData() :
   _frequency(0),
+  _num_grapes(0),
   _reference_samplesize(0),
   _estimation_samplesize(0),
   _num_placed(0),

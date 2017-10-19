@@ -25,7 +25,8 @@ void Arbor::processCommandLineOptions(int argc, const char * argv[])
         ("help,h",                                                                                                           "produce help message")
         ("version,v",                                                                                                        "show program version")
         ("datafile,d",      boost::program_options::value<std::string>(&_data_file_name),                                    "name of parameter sample file")
-        ("grapefraction,f", boost::program_options::value< double >(&_grape_fraction)->default_value(_def_grapefraction),    "fraction of sample to use in forming grapes")
+        ("grapefraction,f", boost::program_options::value< double >(&_grape_fraction)->default_value(_def_grapefraction),    "fraction of total sample used as the reference sample")
+        ("keepfraction,k",  boost::program_options::value< double >(&_keep_fraction)->default_value(_def_keepfraction),      "fraction of the reference sample to use in forming grapes")
         ("minsamplesize,m", boost::program_options::value< unsigned >(&_min_sample_size)->default_value(_def_minsamplesize), "minimum number of sampled points for tree topology to be considered")
         ("seed,s",          boost::program_options::value< unsigned >(&_rnseed)->default_value(_def_rnseed),                 "seed for pseudorandom number generation")
         ;
@@ -73,6 +74,16 @@ void Arbor::processCommandLineOptions(int argc, const char * argv[])
             }
         }
 
+    // If user used --keepfraction on command line, perform sanity check to ensure that value specified was greater than or equal to 0 and less than or equal to 1
+    if (vm.count("keepfraction") > 0)
+        {
+        if (_keep_fraction <= 0.0 || _keep_fraction >= 1.0)
+            {
+            std::cout << boost::str(boost::format("Error: specified keepfraction (%.3f) should be between 0 and 1.") % _keep_fraction) << std::endl;
+            std::exit(1);
+            }
+        }
+
     // If user used --minsamplesize on command line, perform sanity check to ensure that value specified was greater than 0
     if (vm.count("minsamplesize") > 0)
         {
@@ -92,6 +103,7 @@ void Arbor::showUserSpecifiedOptions() const
     std::cout << boost::str(boost::format("  datafile:           %s")   % _data_file_name) << std::endl;
     std::cout << boost::str(boost::format("  minsamplesize:      %d")   % _min_sample_size) << std::endl;
     std::cout << boost::str(boost::format("  grapefraction:      %.3f") % _grape_fraction) << std::endl;
+    std::cout << boost::str(boost::format("  keepfraction:       %.3f") % _keep_fraction) << std::endl;
     }
 
 void Arbor::calcParamTypesFromColumnHeaders()
@@ -281,7 +293,7 @@ void Arbor::showParamTable() const
         }
     }
 
-void Arbor::chooseGrapeSeeds(sample_vect_t & parameters)
+void Arbor::chooseReferenceSample(sample_vect_t & parameters)
     {
     // Builds two vectors of indices into _parameters vector:
     // _reference_indices holds indices of points used as grape seeds (a random proportion _grape_fraction of all points in _parameters);
@@ -298,6 +310,9 @@ void Arbor::chooseGrapeSeeds(sample_vect_t & parameters)
         else
             _estimation_indices.push_back(i);
         }
+
+    // Only _keep_fraction of the reference sample points will be used for grapes (i.e. those in the 100*_keep_fraction HPD credible interval)
+    _ngrapes = (unsigned)(_keep_fraction*_reference_indices.size());
 
     // Add to tally of total number of estimation points used over all topologies
     _N += (unsigned)_estimation_indices.size();
@@ -545,7 +560,7 @@ double Arbor::calcPutativeRadius(unsigned index, sample_vect_t & parameters, uns
     {
     // Returns smallest radius around _parameters[index] such that num_to_keep reference points are included.
     neighbors.clear();
-    for (unsigned i = 0; i < _reference_indices.size(); ++i)
+    for (unsigned i = 0; i < _ngrapes; ++i)
         {
         unsigned k = _reference_indices[i];
         double d = 0.0;
@@ -564,8 +579,8 @@ double Arbor::calcPutativeRadius(unsigned index, sample_vect_t & parameters, uns
 
 void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihoods, dlb_vect_t & log_priors, dlb_vect_t & log_jacobians)
     {
-    // Creates grape objects from points stored in _reference_indices.
-    assert(_reference_indices.size() > 0);
+    // Creates grape objects from first _ngrapes points stored in _reference_indices.
+    assert(_ngrapes > 0);
 
     // Sort _reference_indices so that reference points having highest log-kernel are first
     std::vector< pair_uint_dbl_t > tmp;
@@ -592,7 +607,7 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
 
     _grapes.clear();
     std::vector<pair_uint_dbl_t> neighbors;
-    for (unsigned i = 0; i < _reference_indices.size(); ++i)
+    for (unsigned i = 0; i < _ngrapes; ++i)
         {
         unsigned k = _reference_indices[i];
         double r = calcPutativeRadius(k, parameters, num_to_keep, neighbors);
@@ -603,11 +618,12 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
             _min_radius = r;
         }
 
-    // Debug sanity check: make sure all grapes contain at least 2 reference sample points (their center plus 1 other)
+#if 0
+    // Sanity check (can remove when working): make sure all grapes contain at least 2 kept reference sample points (their center plus 1 other)
     for (auto & g : _grapes)
         {
         unsigned ninside = 0;
-        for (unsigned i = 0; i < _reference_indices.size(); ++i)
+        for (unsigned i = 0; i < _ngrapes; ++i)
             {
             unsigned k = _reference_indices[i];
             double d = calcDistance(g._v, parameters[k]);
@@ -617,6 +633,7 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
         if (ninside != 2)
             throw XArbor(boost::str(boost::format("at least one grape does not enclose 1 point besides itself (ninside = %d)") % ninside));
         }
+#endif
 
     // All grapes have same radius equal to the smallest radius calculated for any grape
     for (auto & g : _grapes)
@@ -683,7 +700,7 @@ void Arbor::margLikeOneTopology(sample_vect_t & parameters, dlb_vect_t & log_lik
     {
     // Builds _reference_indices and _estimation_indices for this tree topology
     // and adds number of estimation points to _N)
-    chooseGrapeSeeds(parameters);
+    chooseReferenceSample(parameters);
 
     // Calculates _means and _stdevs from reference sample only
     calcMeansAndStdevs(parameters);
@@ -728,6 +745,7 @@ void Arbor::calcIndivTopolMargLikes()
 
             topol_record->_used = true;
             topol_record->_reference_samplesize = (unsigned)_reference_indices.size();
+            topol_record->_num_grapes = _ngrapes;
             topol_record->_estimation_samplesize = (unsigned)_estimation_indices.size();
             topol_record->_num_placed = (unsigned)_placed.size();
             topol_record->_radius = _min_radius;
@@ -738,23 +756,23 @@ void Arbor::calcIndivTopolMargLikes()
 void Arbor::showTopoFreq()
     {
     unsigned i = 1;
-    std::cout << "\n  Found " << _tree_topologies.size() << " tree topologies:" << std::endl;
-    std::cout << boost::str(boost::format("  %10s %10s %10s\n") % "number" % "topology" % "frequency");
+    std::cout << "\n  Found " << _tree_topologies.size() << " tree " << (_tree_topologies.size() == 1 ? "topology:" : "topologies:") << std::endl;
+    std::cout << boost::str(boost::format("  %10s %10s %10s\n") % " " % "topology" % "frequency");
     for (auto p : _tree_topologies)
         {
-        std::cout << boost::str(boost::format("  %10d %10d %10d\n") % (i+1) % p.second % p.first);
+        std::cout << boost::str(boost::format("  %10d %10d %10d\n") % i % p.second % p.first);
         ++i;
         }
     }
 
 void Arbor::showTopoTable()
     {
-    std::cout << "\n  Found " << _tree_topologies.size() << " tree topologies:" << std::endl;
-    std::cout << boost::str(boost::format("  %10s %10s %10s %10s %10s %10s %10s\n") % "topology" % "frequency" % "rsample" % "esample" % "placed" % "%placed" % "radius");
+    std::cout << "\n  Found " << _tree_topologies.size() << " tree " << (_tree_topologies.size() == 1 ? "topology:" : "topologies:") << std::endl;
+    std::cout << boost::str(boost::format("  %10s %10s %10s %10s %10s %10s %10s %10s\n") % "topology" % "frequency" % "rsample" % "ngrapes" % "esample" % "placed" % "%placed" % "radius");
     for (auto topol_record : _db._topologies)
         {
         if (topol_record->_used) {
-            std::cout << boost::str(boost::format("  %10d %10d %10d %10d %10d %10.3f %10.3f\n") % topol_record->_id % topol_record->_frequency % topol_record->_reference_samplesize % topol_record->_estimation_samplesize % topol_record->_num_placed % topol_record->calcPercentPlaced() % topol_record->_radius);
+            std::cout << boost::str(boost::format("  %10d %10d %10d %10d %10d %10d %10.3f %10.3f\n") % topol_record->_id % topol_record->_frequency % topol_record->_reference_samplesize % topol_record->_num_grapes % topol_record->_estimation_samplesize % topol_record->_num_placed % topol_record->calcPercentPlaced() % topol_record->_radius);
             }
         else {
             std::cout << boost::str(boost::format("  %10d %10d below cutoff (%d samples required to consider topology)\n") % topol_record->_id % topol_record->_frequency % _min_sample_size);

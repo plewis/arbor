@@ -11,6 +11,7 @@ unsigned    Arbor::_minor_version       = 0;
 unsigned    Arbor::_def_rnseed          = 1;
 unsigned    Arbor::_def_minsamplesize   = 50;
 double      Arbor::_def_grapefraction   = 0.1;
+double      Arbor::_def_keepfraction    = 0.9;
 
 int main(int argc, const char * argv[])
     {
