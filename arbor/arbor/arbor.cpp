@@ -10,6 +10,7 @@
 #include <numeric>
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/gamma.hpp>   // lgamma
+#include <boost/algorithm/string/join.hpp>          // join
 #include "utilfunc.hpp"
 #include "arbor.hpp"
 #include "xarbor.hpp"
@@ -25,6 +26,7 @@ void Arbor::processCommandLineOptions(int argc, const char * argv[])
         ("help,h",                                                                                                           "produce help message")
         ("version,v",                                                                                                        "show program version")
         ("datafile,d",      boost::program_options::value<std::string>(&_data_file_name),                                    "name of parameter sample file")
+        ("forceradius,r",   boost::program_options::value< double >(&_forced_radius),                                        "if specified, this radius will be used for all grapes")
         ("grapefraction,f", boost::program_options::value< double >(&_grape_fraction)->default_value(_def_grapefraction),    "fraction of total sample used as the reference sample")
         ("keepfraction,k",  boost::program_options::value< double >(&_keep_fraction)->default_value(_def_keepfraction),      "fraction of the reference sample to use in forming grapes")
         ("minsamplesize,m", boost::program_options::value< unsigned >(&_min_sample_size)->default_value(_def_minsamplesize), "minimum number of sampled points for tree topology to be considered")
@@ -64,6 +66,7 @@ void Arbor::processCommandLineOptions(int argc, const char * argv[])
             std::exit(1);
             }
         }
+
     // If user used --grapefraction on command line, perform sanity check to ensure that value specified was greater than or equal to 0 and less than or equal to 1
     if (vm.count("grapefraction") > 0)
         {
@@ -77,7 +80,7 @@ void Arbor::processCommandLineOptions(int argc, const char * argv[])
     // If user used --keepfraction on command line, perform sanity check to ensure that value specified was greater than or equal to 0 and less than or equal to 1
     if (vm.count("keepfraction") > 0)
         {
-        if (_keep_fraction <= 0.0 || _keep_fraction >= 1.0)
+        if (_keep_fraction <= 0.0 || _keep_fraction > 1.0)
             {
             std::cout << boost::str(boost::format("Error: specified keepfraction (%.3f) should be between 0 and 1.") % _keep_fraction) << std::endl;
             std::exit(1);
@@ -92,6 +95,17 @@ void Arbor::processCommandLineOptions(int argc, const char * argv[])
             std::cout << boost::str(boost::format("Error: specified minsamplesize (%d) should be greater than 0.") % _min_sample_size) << std::endl;
             std::exit(1);
             }
+        }
+
+    // If user used --forceradius on command line, perform sanity check to ensure that value specified was greater than 0.0
+    if (vm.count("forceradius") > 0)
+        {
+        if (_forced_radius <= 0.0)
+            {
+            std::cout << boost::str(boost::format("Error: specified forceradius (%.3f) should be greater than 0.0.") % _forced_radius) << std::endl;
+            std::exit(1);
+            }
+        _force_radius = true;
         }
 
     }
@@ -610,7 +624,9 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
     for (unsigned i = 0; i < _ngrapes; ++i)
         {
         unsigned k = _reference_indices[i];
-        double r = calcPutativeRadius(k, parameters, num_to_keep, neighbors);
+        double r = _forced_radius;
+        if (!_force_radius)
+            r = calcPutativeRadius(k, parameters, num_to_keep, neighbors);
         std::vector<double> & param_vect = parameters[k];
         _grapes.push_back(Grape(k, r, param_vect, neighbors));
 
@@ -636,9 +652,12 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
 #endif
 
     // All grapes have same radius equal to the smallest radius calculated for any grape
-    for (auto & g : _grapes)
+    if (!_force_radius)
         {
-        g._radius = _min_radius;
+        for (auto & g : _grapes)
+            {
+            g._radius = _min_radius;
+            }
         }
     }
 
@@ -694,6 +713,18 @@ void Arbor::calcRatioTerms(sample_vect_t & parameters, dlb_vect_t & log_likeliho
         if (tmp_count_num_grapes[k] > 1)
             _in_multiple_grapes++;
         }
+
+    // Create data for plot of number of estimation sample points falling inside each grape
+#if 1
+    std::ofstream tmpf("grape-slope.R");
+    tmpf << "y <- c(";
+    for (unsigned j = 0; j < _grapes.size(); ++j)
+        {
+        tmpf << _grapes[j]._placed_log_kernels.size() << ",";
+        }
+    tmpf << ")\nplot(y, type=\"l\")\n";
+    tmpf.close();
+#endif
     }
 
 void Arbor::margLikeOneTopology(sample_vect_t & parameters, dlb_vect_t & log_likelihoods, dlb_vect_t & log_priors)

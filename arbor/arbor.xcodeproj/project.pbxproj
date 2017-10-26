@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D10F12261FA13A5800405900 /* rep1.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = D10F12251FA13A5800405900 /* rep1.txt */; };
 		D119021F1F84191400F5DC64 /* arbor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D119021E1F84191400F5DC64 /* arbor.cpp */; };
 		D11902211F841D8300F5DC64 /* libboost_program_options.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D11902201F841D8300F5DC64 /* libboost_program_options.dylib */; };
 		D133B8E61F8417A500490C10 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D133B8E51F8417A500490C10 /* main.cpp */; };
@@ -20,12 +21,14 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				D10F12261FA13A5800405900 /* rep1.txt in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D10F12251FA13A5800405900 /* rep1.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = rep1.txt; path = "../../../Documents/manuscripts/to-be-written/grape/examples/insertaesedis/mcmcfixvar/fixed/rep1.txt"; sourceTree = "<group>"; };
 		D11902131F8418B400F5DC64 /* grape.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = grape.hpp; sourceTree = "<group>"; };
 		D11902141F8418B400F5DC64 /* grapedb.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = grapedb.hpp; sourceTree = "<group>"; };
 		D11902151F8418B400F5DC64 /* lot.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = lot.hpp; sourceTree = "<group>"; };
@@ -56,6 +59,7 @@
 		D133B8D91F8417A500490C10 = {
 			isa = PBXGroup;
 			children = (
+				D10F12251FA13A5800405900 /* rep1.txt */,
 				D14C1F561F8B99470094FED5 /* libboost_regex.dylib */,
 				D11902201F841D8300F5DC64 /* libboost_program_options.dylib */,
 				D133B8E41F8417A500490C10 /* arbor */,

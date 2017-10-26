@@ -59,12 +59,14 @@ class Arbor
         unsigned                                _rnseed;                    // pseudorandom number seed
         double                                  _grape_fraction;            // fraction of total sample used as the reference sample
         double                                  _keep_fraction;             // fraction of the reference sample used to define grapes
+        double                                  _forced_radius;             // if specified, this will be the radius used for all grapes
 
         // data members that could become user-configurable options in the future
         unsigned                                _skip;                      // number of samples to skip (as burn-in)
         bool                                    _correlation;               // if true, uses full covariance matrix to standardize parameters
 
         // other data members
+        bool                                     _force_radius;             // true if and only if _forced_radius is specified by user
         Lot::SharedPtr                          _lot;                       // Pseudorandom number generator
         GrapeDatabase                           _db;                        // object that stores results for each tree topology and used for outputting summaries of results
         std::vector<std::string>                _column_headers;            // labels in first row of parameter file
@@ -113,6 +115,7 @@ class Arbor
         static unsigned                         _def_minsamplesize;         // default value for _min_sample_size
         static double                           _def_grapefraction;         // default value for _grape_fraction
         static double                           _def_keepfraction;          // default value for _keep_fraction
+        static double                           _def_forcedradius;          // default value for _force_radius
 
     };
 
@@ -120,8 +123,11 @@ inline Arbor::Arbor()
   : _min_sample_size(_def_minsamplesize)
   , _rnseed(_def_rnseed)
   , _grape_fraction(_def_grapefraction)
+  , _keep_fraction(_def_keepfraction)
+  , _forced_radius(_def_forcedradius)
   , _skip(1)
   , _correlation(true)
+  , _force_radius(false)
     {
     std::cout << boost::str(boost::format("%s %d.%d (written by %s)") % _program_name % _major_version % _minor_version % _author) << std::endl;
     }
