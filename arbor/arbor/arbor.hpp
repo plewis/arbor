@@ -99,7 +99,6 @@ class Arbor
 
         // data members that are reused for each topology
         unsigned                                _ngrapes;                   // equals _keep_fraction*_reference_indices.size()
-        unsigned                                _in_multiple_grapes;        // number of estimation sample points placed in more than one grape
         std::vector<double>                     _placed;                    // vector of absolute differences between log-kernel of placed sample point and the log-kernel of the center of the grape in which it was placed
         std::vector<Grape>                      _grapes;                    // vector of Grape objects
         std::vector<double>                     _log_jacobians;             // log of the jacobian for log-transformation plus standardization

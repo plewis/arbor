@@ -26,6 +26,7 @@ class Grape
         double                                  _log_hypercylinder_volume;  // log of the volume of the hypercylinder for this Grape
 
         std::vector<double>                     _placed_log_kernels;        // log_kernel for every estimation sample point placed in this grape
+        std::vector<unsigned>                   _placed_est_indices;        // index of every estimation sample point placed in this grape
     };
 
 inline Grape::Grape(const Grape & other) : _radius(other._radius), _index(other._index), _log_kernel(other._log_kernel), _log_hyperball_volume(other._log_hyperball_volume), _log_hypercylinder_volume(other._log_hypercylinder_volume)

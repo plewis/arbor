@@ -663,7 +663,7 @@ void Arbor::createGrapes(sample_vect_t & parameters, dlb_vect_t & log_likelihood
 
 void Arbor::calcDeltaTerms(sample_vect_t & parameters, dlb_vect_t & log_likelihoods, dlb_vect_t & log_priors, dlb_vect_t & log_jacobians)
     {
-    // Calculates hyperball and hypercylinder volumes for each grape and appends terms for current topology to to _delta_terms vector.
+    // Calculates hyperball and hypercylinder volumes for each grape and appends terms for current topology to _delta_terms vector.
     double log_const_term = log(M_PI)*_nparams/2 - boost::math::lgamma<double>(0.5*_nparams + 1.0);
     for (unsigned i = 0; i < _grapes.size(); ++i)
         {
@@ -679,14 +679,11 @@ void Arbor::calcDeltaTerms(sample_vect_t & parameters, dlb_vect_t & log_likeliho
 void Arbor::calcRatioTerms(sample_vect_t & parameters, dlb_vect_t & log_likelihoods, dlb_vect_t & log_priors, dlb_vect_t & log_jacobians)
     {
     // Appends terms for current topology to to _log_ratio_terms vector.
-    // The tmp_count_num_grapes vector counts the number of grapes to which each estimation sample belongs
-    std::vector<unsigned> tmp_count_num_grapes(_estimation_indices.size(), 0);
 
     _placed.clear();
 
     // Go through _estimation_indices and, for each point, determine if it falls within any grape. If so, append its log kernel minus
     // the representative (grape's) log kernel to the log_ratios vector.
-    unsigned k = 0;
     for (auto i : _estimation_indices)
         {
         for (unsigned j = 0; j < _grapes.size(); ++j)
@@ -697,32 +694,49 @@ void Arbor::calcRatioTerms(sample_vect_t & parameters, dlb_vect_t & log_likeliho
                 {
                 double log_kernel = log_likelihoods[i] + log_priors[i] + log_jacobians[i];
 
+                g._placed_est_indices.push_back(i);
                 g._placed_log_kernels.push_back(log_kernel);            // record log_kernel of point placed in grape g so that variance can later be calculated
                 _placed.push_back(fabs(g._log_kernel - log_kernel));
                 _log_ratio_terms.push_back(g._log_kernel - log_kernel);
-                tmp_count_num_grapes[k] += 1;
                 }
             }
-        k += 1;
         }
 
-    // Count number of estimation sample points belonging to multiple grapes
-    _in_multiple_grapes = 0;
-    for (k = 0; k < _estimation_indices.size(); ++k)
-        {
-        if (tmp_count_num_grapes[k] > 1)
-            _in_multiple_grapes++;
-        }
+#if 0 // for debugging only - very inefficient
+    std::ofstream tmpf("grape-slope.R");
 
     // Create data for plot of number of estimation sample points falling inside each grape
-#if 1
-    std::ofstream tmpf("grape-slope.R");
-    tmpf << "y <- c(";
+    tmpf << "x <- c(";
     for (unsigned j = 0; j < _grapes.size(); ++j)
         {
         tmpf << _grapes[j]._placed_log_kernels.size() << ",";
         }
-    tmpf << ")\nplot(y, type=\"l\")\n";
+    tmpf << ")\n";
+
+    // Create data for plot of number of estimation points shared with other grapes
+    tmpf << "y <- c(";
+    for (unsigned j = 0; j < _grapes.size(); ++j)
+        {
+        std::vector<unsigned> & est_indices = _grapes[j]._placed_est_indices;
+        unsigned num_shared = 0;
+        for (auto i : est_indices)
+            {
+            for (auto & g : _grapes)
+                {
+                if (std::find(g._placed_est_indices.begin(), g._placed_est_indices.end(), i) != g._placed_est_indices.end())
+                    {
+                    // i found in g._placed_est_indices
+                    num_shared++;
+                    }
+                }
+            }
+        assert(num_shared >= est_indices.size()); // each est. point in grape j should always find itself in at least one grape (namely grape j)
+        tmpf << (num_shared - est_indices.size()) << ",";
+        }
+    tmpf << ")\n";
+
+    tmpf << "plot(x, type=\"l\", xlab=\"grape\", ylab=\"count\")\n";
+    tmpf << "lines(y, type=\"l\")\n";
     tmpf.close();
 #endif
     }
@@ -803,12 +817,47 @@ void Arbor::showTopoTable()
     for (auto topol_record : _db._topologies)
         {
         if (topol_record->_used) {
-            std::cout << boost::str(boost::format("  %10d %10d %10d %10d %10d %10d %10.3f %10.3f\n") % topol_record->_id % topol_record->_frequency % topol_record->_reference_samplesize % topol_record->_num_grapes % topol_record->_estimation_samplesize % topol_record->_num_placed % topol_record->calcPercentPlaced() % topol_record->_radius);
+            std::cout << boost::str(boost::format("  %10d %10d %10d %10d %10d %10d %10.3f %10.3f\n")
+                % topol_record->_id
+                % topol_record->_frequency
+                % topol_record->_reference_samplesize
+                % topol_record->_num_grapes
+                % topol_record->_estimation_samplesize
+                % topol_record->_num_placed
+                % topol_record->calcPercentPlaced()
+                % topol_record->_radius);
             }
         else {
             std::cout << boost::str(boost::format("  %10d %10d below cutoff (%d samples required to consider topology)\n") % topol_record->_id % topol_record->_frequency % _min_sample_size);
             }
         }
+#if 1
+    std::cout << boost::str(boost::format("  %10s %10s %10s %10s %10s %10s %10s %10s %10s %14s %14s\n")
+        % "topology"
+        % "frequency"
+        % "rsample"
+        % "esample"
+        % "radius"
+        % "keep"
+        % "ngrapes"
+        % "placed"
+        % "%placed"
+        % "log-c"
+        % "log-delta");
+    for (auto topol_record : _db._topologies)
+        {
+        std::cout << boost::str(boost::format("~~>  %10d %10d %10d %10d %10.3f %10.3f %10d %10d %10d")
+            % topol_record->_id
+            % topol_record->_frequency
+            % topol_record->_reference_samplesize
+            % topol_record->_estimation_samplesize
+            % topol_record->_radius
+            % _keep_fraction
+            % topol_record->_num_grapes
+            % topol_record->_num_placed
+            % topol_record->calcPercentPlaced());
+        }
+#endif
     }
 
 double Arbor::summationWithFloatingControl(const std::vector<double> & v) const
@@ -834,6 +883,10 @@ void Arbor::calcOverallMargLike()
         log_marginal_likelihood = log_denominator_eq11 - (log_numerator_eq11 - log(_N));
         }
 
+#if 1
+    std::cout << boost::str(boost::format(" %14.5f %14.5f") % log_marginal_likelihood % log_denominator_eq11) << std::endl;
+#endif
+    std::cout << boost::str(boost::format("Log Delta                   = %.5f") % log_denominator_eq11) << std::endl;
     std::cout << boost::str(boost::format("Log marginal likelihood     = %.5f") % log_marginal_likelihood) << std::endl;
     }
 
